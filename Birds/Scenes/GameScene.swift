@@ -32,6 +32,8 @@ class GameScene: SKScene {
     var roundState = RoundState.ready
     
     override func didMove(to view: SKView) {
+        physicsWorld.contactDelegate = self
+        
         setupLevel()
         setupGestureRecognizers()
     }
@@ -108,6 +110,23 @@ class GameScene: SKScene {
         
         addCamera()
         
+        // Getting blocks from GameScene TileMap
+        for child in mapNode.children {
+            if let child = child as? SKSpriteNode {
+                guard let name = child.name else { continue }
+                if !["wood", "stone", "glass"].contains(name) { continue }
+                guard let type = BlockType(rawValue: name) else { continue }
+                let block = Block(type: type)
+                block.size = child.size
+                block.position = child.position
+                block.color = UIColor.brown
+                block.zPosition = ZPositions.obstacles
+                block.physicsBody()
+                mapNode.addChild(block)
+                child.color = UIColor.clear
+            }
+        }
+        
         let physicsRect = CGRect(x: 0, y: mapNode.tileSize.height, width: mapNode.frame.size.width, height: mapNode.frame.size.height - mapNode.tileSize.height)
         physicsBody = SKPhysicsBody(edgeLoopFrom: physicsRect)
         physicsBody?.categoryBitMask = PhysicsCategory.edge
@@ -163,7 +182,30 @@ class GameScene: SKScene {
         }
     }
     
+    
+    
 }
+
+
+extension GameScene: SKPhysicsContactDelegate {
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        let mask = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
+        
+        switch mask {
+        case PhysicsCategory.bird | PhysicsCategory.block:
+            if let block = contact.bodyB.node as? Block {
+                block.impact(with: Int(contact.collisionImpulse))
+            } else if let block = contact.bodyA.node as? Block {
+                block.impact(with: Int(contact.collisionImpulse))
+            }
+        default:
+            break
+        }
+    }
+    
+}
+
 
 extension GameScene {
     
