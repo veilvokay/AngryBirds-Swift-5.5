@@ -28,19 +28,14 @@ class Bird: SKSpriteNode {
         birdType = type
         
         let color: UIColor!
+        let texture: SKTexture!
         
         switch type {
-        case .red:
-            color = UIColor.red
-        case .blue:
-            color = UIColor.blue
-        case .yellow:
-            color = UIColor.yellow
-        case .gray:
-            color = UIColor.lightGray
+        case .red, .blue, .yellow, .gray:
+            texture = SKTexture(imageNamed: birdType.rawValue + "1")
         }
         
-        super.init(texture: nil, color: color, size: CGSize(width: 40.0, height: 40.0))
+        super.init(texture: texture, color: UIColor.clear, size: CGSize(width: 40.0, height: 40.0))
     }
     
     required init?(coder aDecoder: NSCoder) {

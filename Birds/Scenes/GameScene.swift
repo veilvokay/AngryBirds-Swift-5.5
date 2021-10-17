@@ -119,11 +119,11 @@ class GameScene: SKScene {
                 let block = Block(type: type)
                 block.size = child.size
                 block.position = child.position
-                block.color = UIColor.brown
+                block.zRotation = child.zRotation
                 block.zPosition = ZPositions.obstacles
                 block.physicsBody()
                 mapNode.addChild(block)
-                child.color = UIColor.clear
+                child.removeFromParent()
             }
         }
         
@@ -193,12 +193,22 @@ extension GameScene: SKPhysicsContactDelegate {
         let mask = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
         
         switch mask {
-        case PhysicsCategory.bird | PhysicsCategory.block:
+        case PhysicsCategory.bird | PhysicsCategory.block,
+            PhysicsCategory.block | PhysicsCategory.edge:
             if let block = contact.bodyB.node as? Block {
                 block.impact(with: Int(contact.collisionImpulse))
             } else if let block = contact.bodyA.node as? Block {
                 block.impact(with: Int(contact.collisionImpulse))
             }
+        case PhysicsCategory.block | PhysicsCategory.block:
+            if let block = contact.bodyA.node as? Block {
+                block.impact(with: Int(contact.collisionImpulse))
+            }
+            if let block = contact.bodyB.node as? Block {
+                block.impact(with: Int(contact.collisionImpulse))
+            }
+        case PhysicsCategory.bird | PhysicsCategory.edge:
+            bird.flying = false
         default:
             break
         }
