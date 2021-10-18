@@ -14,6 +14,8 @@ enum RoundState {
 
 class GameScene: SKScene {
     
+    var SceneManagerDelegate: SceneManagerDelegate?
+    
     var mapNode = SKTileMapNode()
     
     let gameCamera = GameCamera()
@@ -84,7 +86,7 @@ class GameScene: SKScene {
             constraintToAnchor(active: false)
             let dx = anchor.position.x - bird.position.x
             let dy = anchor.position.y - bird.position.y
-            let impulse = CGVector(dx: dx, dy: dy)
+            let impulse = CGVector(dx: dx*1.5, dy: dy*1.5)
             bird.physicsBody?.applyImpulse(impulse)
             bird.isUserInteractionEnabled = false
         }
@@ -159,6 +161,7 @@ class GameScene: SKScene {
         bird.physicsBody?.isDynamic = false
         bird.position = anchor.position
         addChild(bird)
+        bird.aspectScale(to: mapNode.tileSize, width: false, multiplier: 1.0)
         constraintToAnchor(active: true)
         roundState = .ready
     }
@@ -199,6 +202,11 @@ extension GameScene: SKPhysicsContactDelegate {
                 block.impact(with: Int(contact.collisionImpulse))
             } else if let block = contact.bodyA.node as? Block {
                 block.impact(with: Int(contact.collisionImpulse))
+            }
+            if let bird = contact.bodyA.node as? Bird {
+                bird.flying = false
+            } else if let bird = contact.bodyB.node as? Bird {
+                bird.flying = false
             }
         case PhysicsCategory.block | PhysicsCategory.block:
             if let block = contact.bodyA.node as? Block {

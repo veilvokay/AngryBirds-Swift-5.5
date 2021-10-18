@@ -20,26 +20,33 @@ class Bird: SKSpriteNode {
         didSet {
             if flying {
                 physicsBody?.isDynamic = true
+                animateFlight(active: true)
+            } else {
+                animateFlight(active: false)
             }
         }
     }
     
+    let flyingFrames: [SKTexture]
+    
     init(type: BirdType) {
         birdType = type
+        flyingFrames = AnimationHelper.loadTextures(from: SKTextureAtlas(named: type.rawValue), withName: type.rawValue)
+        let texture = SKTexture(imageNamed: type.rawValue + "1")
         
-        let color: UIColor!
-        let texture: SKTexture!
-        
-        switch type {
-        case .red, .blue, .yellow, .gray:
-            texture = SKTexture(imageNamed: birdType.rawValue + "1")
-        }
-        
-        super.init(texture: texture, color: UIColor.clear, size: CGSize(width: 40.0, height: 40.0))
+        super.init(texture: texture, color: UIColor.clear, size: texture.size())
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func animateFlight(active: Bool) {
+        if active {
+            run(SKAction.repeatForever(SKAction.animate(with: flyingFrames, timePerFrame: 0.1, resize: true, restore: true)))
+        } else {
+            removeAllActions()
+        }
     }
     
 }
