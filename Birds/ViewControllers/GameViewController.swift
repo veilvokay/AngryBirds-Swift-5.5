@@ -49,6 +49,12 @@ extension GameViewController: SceneManagerDelegate {
     func present(scene: SKScene) {
         // Load the SKScene
         if let view = self.view as! SKView? {
+            // On presenting a new scene gesture recongnizers get removed
+            if let gestureRecignizers = view.gestureRecognizers {
+                for recongizer in gestureRecignizers {
+                    view.removeGestureRecognizer(recongizer)
+                }
+            }
             // Set the scale mode to .resizeFill to make scene automatically resize so that its dimensions always match those of the view.
             scene.scaleMode = .resizeFill
             // Present the scene

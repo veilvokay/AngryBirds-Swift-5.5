@@ -7,6 +7,12 @@
 
 import SpriteKit
 
+protocol PopupButtonHandlerDelegate {
+    func menuTapped()
+    func retryTapped()
+    func nextTapped()
+}
+
 struct PopupButtons {
     static let menu = 0
     static let next = 1
@@ -16,6 +22,7 @@ struct PopupButtons {
 class Popup: SKSpriteNode {
 
     let type: Int
+    var popupButtonHandlerDelegate: PopupButtonHandlerDelegate?
     
     init(type: Int, size: CGSize) {
         self.type = type
@@ -31,6 +38,7 @@ class Popup: SKSpriteNode {
         let nextButton = SpriteKitButton(defaultButtonImage: "popnext", action: popupButtonHandler, index: PopupButtons.next)
         let retryButton = SpriteKitButton(defaultButtonImage: "popretry", action: popupButtonHandler, index: PopupButtons.retry)
         nextButton.isUserInteractionEnabled = type == 0 ? true : false
+        nextButton.alpha = type == 0 ? 1 : 0.5
         
         menuButton.aspectScale(to: background.size, width: true, multiplier: 0.2)
         nextButton.aspectScale(to: background.size, width: true, multiplier: 0.2)
@@ -43,7 +51,7 @@ class Popup: SKSpriteNode {
         
         menuButton.position = CGPoint(x: -backgroundWidthOffset + buttonWidthOffset, y: -backgroundHeightOffset - buttonHeightOffset)
         nextButton.position = CGPoint(x: 0, y: -backgroundHeightOffset - buttonHeightOffset)
-        retryButton.position = CGPoint(x: backgroundWidthOffset - backgroundWidthOffset, y: -backgroundHeightOffset - buttonHeightOffset)
+        retryButton.position = CGPoint(x: backgroundWidthOffset - buttonWidthOffset, y: -backgroundHeightOffset - buttonHeightOffset)
         background.position = CGPoint(x: 0, y: buttonHeightOffset)
         
         addChild(menuButton)
@@ -53,7 +61,16 @@ class Popup: SKSpriteNode {
     }
     
     func popupButtonHandler(index: Int) {
-        
+        switch index {
+        case PopupButtons.menu:
+            popupButtonHandlerDelegate?.menuTapped()
+        case PopupButtons.next:
+            popupButtonHandlerDelegate?.nextTapped()
+        case PopupButtons.retry:
+            popupButtonHandlerDelegate?.retryTapped()
+        default:
+            break
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {

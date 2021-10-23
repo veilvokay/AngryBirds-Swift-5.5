@@ -9,7 +9,7 @@ import SpriteKit
 import GameplayKit
 
 enum RoundState {
-    case ready, flying, finished, animating
+    case ready, flying, finished, animating, gameOver
 }
 
 class GameScene: SKScene {
@@ -28,7 +28,8 @@ class GameScene: SKScene {
     var enemies = 0 {
         didSet {
             if enemies < 1 {
-                print("All enemies hit")
+                roundState = .gameOver
+                presentPopup(victory: true)
             }
         }
     }
@@ -80,6 +81,8 @@ class GameScene: SKScene {
                 self.addBird()
             }
         case .animating:
+            break
+        case .gameOver:
             break
         }
         
@@ -182,7 +185,8 @@ class GameScene: SKScene {
     
     func addBird() {
         if birds.isEmpty {
-            print("Game Over")
+            roundState = .gameOver
+            presentPopup(victory: false)
             return
         }
         bird = birds.removeFirst()
@@ -229,6 +233,14 @@ class GameScene: SKScene {
         }
     }
     
+    func presentPopup(victory: Bool) {
+        let type = victory ? 0 : 1
+        let popup = Popup(type: type, size: frame.size)
+        popup.zPosition = ZPositions.hudBackground
+        popup.popupButtonHandlerDelegate = self // to be able to handle delegate calls in GameScene class
+        gameCamera.addChild(popup) // add to gameCamera to avoid behavior when camera moves or scales and stays in the same position and w/ a same size
+    }
+    
     override func didSimulatePhysics() {
         guard let physicsBody = bird.physicsBody else { return }
         if roundState == .flying && physicsBody.isResting {
@@ -242,6 +254,25 @@ class GameScene: SKScene {
     
 }
 
+extension GameScene: PopupButtonHandlerDelegate {
+    
+    func menuTapped() {
+        SceneManagerDelegate?.presentLevelScene()
+    }
+    
+    func nextTapped() {
+        if let level = level {
+            SceneManagerDelegate?.presentGameSceneFor(level: level + 1)
+        }
+    }
+    
+    func retryTapped() {
+        if let level = level {
+            SceneManagerDelegate?.presentGameSceneFor(level: level)
+        }
+    }
+    
+}
 
 extension GameScene: SKPhysicsContactDelegate {
     
